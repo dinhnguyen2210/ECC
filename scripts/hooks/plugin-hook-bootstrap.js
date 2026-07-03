@@ -97,7 +97,10 @@ function findShellBinary() {
       windowsHide: true,
       timeout: 30000,
     });
-    if (!probe.error) {
+    // Require a clean exit, not just a successful spawn: the WSL stub at
+    // System32\bash.exe spawns fine but exits nonzero when no distro is
+    // installed, and would otherwise be picked as a working shell.
+    if (!probe.error && probe.status === 0) {
       _cachedShell = candidate;
       return _cachedShell;
     }
@@ -118,7 +121,8 @@ function findBashBinary() {
 
   for (const candidate of candidates) {
     const probe = spawnSync(candidate, ['-c', ':'], { stdio: 'ignore', windowsHide: true, timeout: 30000 });
-    if (!probe.error) {
+    // status check filters out the distro-less WSL bash stub (see findShellBinary)
+    if (!probe.error && probe.status === 0) {
       _cachedBash = candidate;
       return _cachedBash;
     }

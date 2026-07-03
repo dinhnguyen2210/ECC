@@ -61,7 +61,9 @@ function findShellBinary() {
       stdio: 'ignore',
       windowsHide: true
     });
-    if (!probe.error) {
+    // Require a clean exit: the distro-less WSL stub at System32\bash.exe
+    // spawns successfully but cannot actually run scripts.
+    if (!probe.error && probe.status === 0) {
       return candidate;
     }
   }
